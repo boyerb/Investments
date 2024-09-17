@@ -2,8 +2,10 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join('..')))
 import investments_functions as invf
-
 import pandas as pd
+
+ydat = invf.get_monthly_returns('AAPL')
+
 
 fdat=invf.get_ff5()
 

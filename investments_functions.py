@@ -55,7 +55,7 @@ def get_ff3():
     ff_three_factors.iloc[:, 1:] = ff_three_factors.iloc[:, 1:].apply(pd.to_numeric, errors='coerce')
 
     # Multiply all columns except 'Date' by 0.01
-    ff_three_factors.iloc[:, 1:] = (ff_three_factors.iloc[:, 1:] * 0.01).round(4)
+    ff_three_factors.iloc[:, 1:] = (ff_three_factors.iloc[:, 1:] * 0.01)
 
     # reset the index
     ff_three_factors.set_index('Date', inplace=True)
@@ -77,9 +77,10 @@ def get_ff3():
 """
 def get_monthly_returns(tickers, start_date, end_date, tbill_return=True):
     all_returns = pd.DataFrame()
+    adjusted_start_date = pd.to_datetime(start_date) - pd.DateOffset(months=1)
     for ticker in tickers:
         # Download daily data from Yahoo Finance
-        data = yf.download(ticker, start=start_date, end=end_date, interval="1d")
+        data = yf.download(ticker, start=adjusted_start_date, end=end_date, interval="1d")
 
         # Resample data to get the last business day of each month
         month_end_data = data.resample('ME').ffill()  # 'ME' gives month-end, ffill to get last available price
@@ -94,8 +95,9 @@ def get_monthly_returns(tickers, start_date, end_date, tbill_return=True):
         all_returns[ticker] = month_end_data['Monthly Return']
 
     all_returns.index = all_returns.index.to_period('M')
+
     if tbill_return:
         ff3 = get_ff3()
-
         all_returns = all_returns.join(ff3['RF'])
+
     return all_returns

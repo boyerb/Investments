@@ -83,7 +83,7 @@ def get_monthly_returns(tickers, start_date, end_date, tbill_return=True):
         data = yf.download(ticker, start=adjusted_start_date, end=end_date, interval="1d")
 
         # Resample data to get the last business day of each month
-        month_end_data = data.resample('M').ffill()  # 'M' gives month-end, ffill to get last available price
+        month_end_data = data.resample('M').ffill()  # 'ME' gives month-end, ffill to get last available price
 
         # Calculate monthly returns based on month-end data
         month_end_data['Monthly Return'] = month_end_data['Adj Close'].pct_change()

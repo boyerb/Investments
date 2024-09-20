@@ -1,7 +1,7 @@
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join('..')))
-from functions import bbf_functions as invf
+from functions import bates_boyer_fletcher_functions as invf
 import pandas as pd
 
 tickers = ['AAPL', 'MSFT', 'GOOGL', 'VOO']

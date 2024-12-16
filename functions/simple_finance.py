@@ -94,7 +94,7 @@ def get_monthly_returns(tickers, start_date, end_date, tbill_return=True):
         # Add returns to the main DataFrame with ticker as column name
         all_returns[ticker] = month_end_data['Monthly Return']
 
-    all_returns.index = all_returns.index.to_period('ME')
+    all_returns.index = all_returns.index.to_period('M')
 
     if tbill_return:
         ff3 = get_ff3()

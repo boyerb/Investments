@@ -24,7 +24,7 @@ def get_ff5():
     ff_five_factors.rename(columns={'Unnamed: 0': 'Date'}, inplace=True)
 
     # Convert the Date column to datetime format (YYYY-MM)
-    ff_five_factors['Date'] = pd.to_datetime(ff_five_factors['Date'], format='%Y%m').dt.to_period('ME')
+    ff_five_factors['Date'] = pd.to_datetime(ff_five_factors['Date'], format='%Y%m').dt.to_period('M')
 
     # Convert all columns except 'Date' to numeric types
     ff_five_factors.iloc[:, 1:] = ff_five_factors.iloc[:, 1:].apply(pd.to_numeric, errors='coerce')
@@ -92,7 +92,7 @@ def get_monthly_returns(tickers, start_date, end_date, tbill_return=True):
         print('Hellow')
         asdsadsadsad
         # Resample data to get the last business day of each month
-        month_end_data = data.resample('ME').ffill()  # 'ME' gives month-end, ffill to get last available price
+        month_end_data = data.resample('M').ffill()  # 'M' gives month-end, ffill to get last available price
 
         # Calculate monthly returns based on month-end data
         month_end_data['Monthly Return'] = month_end_data['Adj Close'].pct_change()
@@ -103,7 +103,7 @@ def get_monthly_returns(tickers, start_date, end_date, tbill_return=True):
         # Add returns to the main DataFrame with ticker as column name
         all_returns[ticker] = month_end_data['Monthly Return']
 
-    all_returns.index = all_returns.index.to_period('ME')
+    all_returns.index = all_returns.index.to_period('M')
 
     if tbill_return:
         ff3 = get_ff3()

@@ -56,7 +56,7 @@ def get_ff3():
     ff_three_factors.rename(columns={'Unnamed: 0': 'Date'}, inplace=True)
 
     # Convert the Date column to datetime format (YYYY-MM)
-    ff_three_factors['Date'] = pd.to_datetime(ff_three_factors['Date'], format='%Y%m').dt.to_period('ME')
+    ff_three_factors['Date'] = pd.to_datetime(ff_three_factors['Date'], format='%Y%m').dt.to_period()
 
     # Convert all columns except 'Date' to numeric types
     ff_three_factors.iloc[:, 1:] = ff_three_factors.iloc[:, 1:].apply(pd.to_numeric, errors='coerce')
@@ -88,7 +88,9 @@ def get_monthly_returns(tickers, start_date, end_date, tbill_return=True):
     for ticker in tickers:
         # Download daily data from Yahoo Finance
         data = yf.download(ticker, start=adjusted_start_date, end=end_date, interval="1d")
-
+        #print(data)
+        print('Hellow')
+        asdsadsadsad
         # Resample data to get the last business day of each month
         month_end_data = data.resample('ME').ffill()  # 'ME' gives month-end, ffill to get last available price
 

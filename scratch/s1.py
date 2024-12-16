@@ -24,7 +24,7 @@ ff_five_factors = ff_five_factors[ff_five_factors['Unnamed: 0'].str.match(r'^\d{
 ff_five_factors.rename(columns={'Unnamed: 0': 'Date'}, inplace=True)
 
 # Convert the Date column to datetime format (YYYY-MM)
-ff_five_factors['Date'] = pd.to_datetime(ff_five_factors['Date'], format='%Y%m').dt.to_period('M')
+ff_five_factors['Date'] = pd.to_datetime(ff_five_factors['Date'], format='%Y%m').dt.to_period('ME')
 
 # Print the first few rows to verify
 print(ff_five_factors.head())

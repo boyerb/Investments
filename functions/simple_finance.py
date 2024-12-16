@@ -2,6 +2,9 @@ import pandas as pd
 import yfinance as yf
 import requests
 import io
+import ssl
+import urllib.request
+import certifi
 
 """
 This functions downloads and processes the Fama-French 5-Factor data from the Dartmouth website using the 'requests' library. 
@@ -10,7 +13,9 @@ def get_ff5():
     url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Research_Data_5_Factors_2x3_CSV.zip"
 
     # Read the zipped CSV file from the URL
-    ff_five_factors = pd.read_csv(url, skiprows=3)
+    context = ssl.create_default_context(cafile=certifi.where())
+    with urllib.request.urlopen(url, context=context) as response:
+        ff_five_factors = pd.read_csv(url, skiprows=3)
 
     # Use str.match to identify rows with dates (6-digit YYYYMM format), and drop NaN values that could arise
     ff_five_factors = ff_five_factors[ff_five_factors['Unnamed: 0'].str.match(r'^\d{6}$', na=False)]
@@ -40,7 +45,9 @@ def get_ff3():
     url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Research_Data_Factors_CSV.zip"
 
     # Read the zipped CSV file from the URL
-    ff_three_factors = pd.read_csv(url, skiprows=3)
+    context = ssl.create_default_context(cafile=certifi.where())
+    with urllib.request.urlopen(url, context=context) as response:
+        ff_three_factors = pd.read_csv(url, skiprows=3)
 
     # Use str.match to identify rows with dates (6-digit YYYYMM format), and drop NaN values that could arise
     ff_three_factors = ff_three_factors[ff_three_factors['Unnamed: 0'].str.match(r'^\d{6}$', na=False)]

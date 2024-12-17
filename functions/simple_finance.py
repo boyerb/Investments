@@ -31,7 +31,7 @@ def get_ff5():
     ff_five_factors.rename(columns={'Unnamed: 0': 'Date'}, inplace=True)
 
     # Convert the Date column to datetime format (YYYY-MM)
-    ff_five_factors['Date'] = pd.to_datetime(ff_five_factors['Date'], format='%Y%m').dt.to_period('M')
+    ff_five_factors['Date'] = pd.to_datetime(ff_five_factors['Date'], format='%Y%m')
 
     # Convert all columns except 'Date' to numeric types
     ff_five_factors.iloc[:, 1:] = ff_five_factors.iloc[:, 1:].apply(pd.to_numeric, errors='coerce')

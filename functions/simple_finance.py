@@ -12,7 +12,7 @@ import os
 from requests.adapters import HTTPAdapter
 from urllib3.poolmanager import PoolManager
 import urllib3
-
+import statsmodels.api as sm
 """
 This functions downloads and processes the Fama-French 5-Factor data from the Dartmouth website using the 'requests' library. 
 """
@@ -47,7 +47,7 @@ def get_ff5():
 """
 This functions downloads and processes the Fama-French 3-Factor data from the Dartmouth website using the 'requests' library. 
 """
-
+#########################################################################################################################
 def get_ff3():
     #http = urllib3.PoolManager(cert_reqs="CERT_REQUIRED", ca_certs=certifi.where())
     #http.request("GET", "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Research_Data_Factors_CSV.zip")
@@ -127,3 +127,26 @@ def get_monthly_returns(tickers, start_date, end_date, tbill_return=True):
         all_returns = pd.merge(all_returns, ff3[['RF']], left_on='YearMonth',  right_index=True,  how='left')
 
     return all_returns
+
+####################################################################################################
+def intercept(x,y):
+    x_with_intercept = sm.add_constant(x)
+
+    # Fit the model: y = β0 + β1*x
+    model = sm.OLS(y, x_with_intercept)
+    results = model.fit()
+
+    # Return the slope (coefficient of x)
+    return results.params[0]  # The slope is the second parameter (after the intercept)
+
+
+####################################################################################################
+def slope(x,y):
+    x_with_intercept = sm.add_constant(x)
+
+    # Fit the model: y = β0 + β1*x
+    model = sm.OLS(y, x_with_intercept)
+    results = model.fit()
+
+    # Return the slope (coefficient of x)
+    return results.params[1]  # The slope is the second parameter (after the intercept)

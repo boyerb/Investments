@@ -129,7 +129,7 @@ def get_monthly_returns(tickers, start_date, end_date, tbill_return=True):
     return all_returns
 
 ####################################################################################################
-def intercept(x,y):
+def intercept(y,x):
     x_with_intercept = sm.add_constant(x)
 
     # Fit the model: y = β0 + β1*x
@@ -141,7 +141,7 @@ def intercept(x,y):
 
 
 ####################################################################################################
-def slope(x,y):
+def slope(y,x):
     x_with_intercept = sm.add_constant(x)
 
     # Fit the model: y = β0 + β1*x

@@ -1,3 +1,5 @@
+import zipfile
+from io import BytesIO
 import pandas as pd
 import yfinance as yf
 import requests
@@ -5,6 +7,11 @@ import io
 import ssl
 import urllib.request
 import certifi
+import urllib.request
+import os
+from requests.adapters import HTTPAdapter
+from urllib3.poolmanager import PoolManager
+import urllib3
 
 """
 This functions downloads and processes the Fama-French 5-Factor data from the Dartmouth website using the 'requests' library. 
@@ -42,15 +49,24 @@ This functions downloads and processes the Fama-French 3-Factor data from the Da
 """
 
 def get_ff3():
-    url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Research_Data_Factors_CSV.zip"
+    #http = urllib3.PoolManager(cert_reqs="CERT_REQUIRED", ca_certs=certifi.where())
+    #http.request("GET", "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Research_Data_Factors_CSV.zip")
 
-    # Read the zipped CSV file from the URL
-    context = ssl.create_default_context(cafile=certifi.where())
-    with urllib.request.urlopen(url, context=context) as response:
-        ff_three_factors = pd.read_csv(url, skiprows=3)
+    # Make the request using the session
+    url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Research_Data_Factors_CSV.zip"
+    response = requests.get(url,verify=False)
+
+    # Read the content of the file
+    zip_content = response.content
+
+    # Open the zip file from the content
+    with zipfile.ZipFile(io.BytesIO(zip_content)) as zf:
+        with zf.open('F-F_Research_Data_Factors.CSV') as f:
+            # Read the CSV file content (you can load it into pandas or process as needed)
+            ff_three_factors = pd.read_csv(f, skiprows=3)
 
     # Use str.match to identify rows with dates (6-digit YYYYMM format), and drop NaN values that could arise
-    ff_three_factors = ff_three_factors[ff_three_factors['Unnamed: 0'].str.match(r'^\d{6}$', na=False)]
+    ff_three_factors = ff_three_factors[ff_three_factors['Unnamed: 0'].str.match(r'^\d{6}$', na=False)] # gets rid of Copyright line
 
     # Rename the first column to 'Date'
     ff_three_factors.rename(columns={'Unnamed: 0': 'Date'}, inplace=True)
@@ -88,12 +104,14 @@ def get_monthly_returns(tickers, start_date, end_date, tbill_return=True):
     for ticker in tickers:
         # Download daily data from Yahoo Finance
         data = yf.download(ticker, start=adjusted_start_date, end=end_date, interval="1d")
-        #print(data)
+        data['date'] = data.index
 
         # Resample data to get the last business day of each month
         month_end_data = data.groupby([data.index.year, data.index.month]).apply(lambda x: x.loc[x.index.max()])
+        month_end_data = month_end_data.set_index('date')
 
         # Calculate monthly returns based on month-end data
+        month_end_data = month_end_data.sort_index()
         month_end_data['Monthly Return'] = month_end_data['Adj Close'].pct_change()
 
         # Drop any missing values (the first row will have NaN for returns)
@@ -101,8 +119,6 @@ def get_monthly_returns(tickers, start_date, end_date, tbill_return=True):
 
         # Add returns to the main DataFrame with ticker as column name
         all_returns[ticker] = month_end_data['Monthly Return']
-
-    all_returns.index = all_returns.index.to_period('M')
 
     if tbill_return:
         ff3 = get_ff3()

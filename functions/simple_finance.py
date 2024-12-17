@@ -54,7 +54,7 @@ def get_ff3():
 
     # Make the request using the session
     url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Research_Data_Factors_CSV.zip"
-    response = requests.get(url,verify=False)
+    response = requests.get(url, verify=False)
 
     # Read the content of the file
     zip_content = response.content
@@ -122,6 +122,8 @@ def get_monthly_returns(tickers, start_date, end_date, tbill_return=True):
 
     if tbill_return:
         ff3 = get_ff3()
-        all_returns = all_returns.join(ff3['RF'])
+        all_returns['YearMonth'] = all_returns.index.to_period('M')
+
+        all_returns = pd.merge(all_returns, ff3[['RF']], left_on='YearMonth',  right_index=True,  how='left')
 
     return all_returns

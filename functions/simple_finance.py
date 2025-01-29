@@ -54,7 +54,7 @@ def get_ff3():
 
     # Make the request using the session
     url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Research_Data_Factors_CSV.zip"
-    response = requests.get(url, verify=False)
+    response = requests.get(url)
 
     # Read the content of the file
     zip_content = response.content

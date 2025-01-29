@@ -103,32 +103,32 @@ def get_monthly_returns(tickers, start_date, end_date, tbill_return=True):
     adjusted_start_date = pd.to_datetime(start_date) - pd.DateOffset(months=1)
     for ticker in tickers:
         # Download daily data from Yahoo Finance
-        data = yf.download(ticker, start=adjusted_start_date, end=end_date, interval="1d")
+        data = yf.download(ticker, start=adjusted_start_date, end=end_date, interval="1d", auto_adjust=False)
         data['date'] = data.index
-        print(data)
+
         # Resample data to get the last business day of each month
-        #month_end_data = data.groupby([data.index.year, data.index.month]).apply(lambda x: x.loc[x.index.max()])
-        #month_end_data = month_end_data.set_index('date')
+        month_end_data = data.groupby([data.index.year, data.index.month]).apply(lambda x: x.loc[x.index.max()])
+        month_end_data = month_end_data.set_index('date')
 
         # Calculate monthly returns based on month-end data
-        #month_end_data = month_end_data.sort_index()
-        #print(month_end_data)
+        month_end_data = month_end_data.sort_index()
+        print(month_end_data)
 
-        #month_end_data['Monthly Return'] = month_end_data['Adj Close'].pct_change()
+        month_end_data['Monthly Return'] = month_end_data['Adj Close'].pct_change()
 
         # Drop any missing values (the first row will have NaN for returns)
-        #month_end_data.dropna(inplace=True)
+        month_end_data.dropna(inplace=True)
 
         # Add returns to the main DataFrame with ticker as column name
-        #all_returns[ticker] = month_end_data['Monthly Return']
+        all_returns[ticker] = month_end_data['Monthly Return']
 
-    #if tbill_return:
-        #ff3 = get_ff3()
-        #all_returns['YearMonth'] = all_returns.index.to_period('M')
+    if tbill_return:
+        ff3 = get_ff3()
+        all_returns['YearMonth'] = all_returns.index.to_period('M')
 
-        #all_returns = pd.merge(all_returns, ff3[['RF']], left_on='YearMonth',  right_index=True,  how='left')
+        all_returns = pd.merge(all_returns, ff3[['RF']], left_on='YearMonth',  right_index=True,  how='left')
 
-    #return all_returns
+    return all_returns
 
 ####################################################################################################
 def intercept(y,x):

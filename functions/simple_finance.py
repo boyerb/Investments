@@ -112,8 +112,6 @@ def get_monthly_returns(tickers, start_date, end_date, tbill_return=True):
 
         # Calculate monthly returns based on month-end data
         month_end_data = month_end_data.sort_index()
-        print(month_end_data)
-
         month_end_data['Monthly Return'] = month_end_data['Adj Close'].pct_change()
 
         # Drop any missing values (the first row will have NaN for returns)

@@ -112,21 +112,23 @@ def get_monthly_returns(tickers, start_date, end_date, tbill_return=True):
 
         # Calculate monthly returns based on month-end data
         month_end_data = month_end_data.sort_index()
+
         month_end_data['Monthly Return'] = month_end_data['Adj Close'].pct_change()
+        print(month_end_data)
 
         # Drop any missing values (the first row will have NaN for returns)
-        month_end_data.dropna(inplace=True)
+        #month_end_data.dropna(inplace=True)
 
         # Add returns to the main DataFrame with ticker as column name
-        all_returns[ticker] = month_end_data['Monthly Return']
+        #all_returns[ticker] = month_end_data['Monthly Return']
 
-    if tbill_return:
-        ff3 = get_ff3()
-        all_returns['YearMonth'] = all_returns.index.to_period('M')
+    #if tbill_return:
+        #ff3 = get_ff3()
+        #all_returns['YearMonth'] = all_returns.index.to_period('M')
 
-        all_returns = pd.merge(all_returns, ff3[['RF']], left_on='YearMonth',  right_index=True,  how='left')
+        #all_returns = pd.merge(all_returns, ff3[['RF']], left_on='YearMonth',  right_index=True,  how='left')
 
-    return all_returns
+    #return all_returns
 
 ####################################################################################################
 def intercept(y,x):

@@ -105,14 +105,14 @@ def get_monthly_returns(tickers, start_date, end_date, tbill_return=True):
         # Download daily data from Yahoo Finance
         data = yf.download(ticker, start=adjusted_start_date, end=end_date, interval="1d")
         data['date'] = data.index
-
+        print(data)
         # Resample data to get the last business day of each month
-        month_end_data = data.groupby([data.index.year, data.index.month]).apply(lambda x: x.loc[x.index.max()])
-        month_end_data = month_end_data.set_index('date')
+        #month_end_data = data.groupby([data.index.year, data.index.month]).apply(lambda x: x.loc[x.index.max()])
+        #month_end_data = month_end_data.set_index('date')
 
         # Calculate monthly returns based on month-end data
-        month_end_data = month_end_data.sort_index()
-        print(month_end_data)
+        #month_end_data = month_end_data.sort_index()
+        #print(month_end_data)
 
         #month_end_data['Monthly Return'] = month_end_data['Adj Close'].pct_change()
 

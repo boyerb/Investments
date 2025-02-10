@@ -123,7 +123,7 @@ def get_monthly_returns(tickers, start_date, end_date, tbill_return=True):
         if all_returns.empty:
             all_returns = month_end_data[['Monthly Return']].rename(columns={'Monthly Return': ticker})
         else:
-            all_returns = all_returns.merge(month_end_data[['Monthly Return']], how='outer', left_index=True, right_index=True)
+            all_returns = all_returns.merge(month_end_data[['Monthly Return']], how='outer', left_index=True, right_index=True, suffixes=('', '_month_end'))
             all_returns.rename(columns={f'Monthly Return': ticker}, inplace=True)
 
     if tbill_return:

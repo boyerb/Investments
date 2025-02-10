@@ -119,18 +119,12 @@ def get_monthly_returns(tickers, start_date, end_date, tbill_return=True):
         # Drop any missing values (the first row will have NaN for returns)
         month_end_data.dropna(inplace=True)
 
-        # Add returns to the main DataFrame with ticker as column name
-        if all_returns.empty:
-            all_returns = month_end_data[['Monthly Return']].rename(columns={'Monthly Return': ticker})
-        else:
-            all_returns = all_returns.merge(month_end_data[['Monthly Return']], how='outer', left_index=True, right_index=True, suffixes=('', '_month_end'))
-            all_returns.rename(columns={f'Monthly Return': ticker}, inplace=True)
+        all_returns[ticker] = month_end_data['Monthly Return']
 
     if tbill_return:
         ff3 = get_ff3()
         all_returns['YearMonth'] = all_returns.index.to_period('M')
-        ff3['YearMonth'] = ff3.index
-        all_returns = pd.merge(all_returns, ff3[['RF', 'YearMonth']], on='YearMonth', how='left')
+        all_returns = pd.merge(all_returns, ff3[['RF']], left_on='YearMonth', right_index=True, how='left')
         all_returns.drop('YearMonth', axis=1, inplace=True)
 
     return all_returns

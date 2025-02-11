@@ -68,6 +68,8 @@ def get_ff3():
     # Use str.match to identify rows with dates (6-digit YYYYMM format), and drop NaN values that could arise
     ff_3 = ff_three_factors[ff_three_factors['Unnamed: 0'].str.match(r'^\d{6}$', na=False)] # gets rid of Copyright line
     ff_three_factors=ff_3.copy()
+    ff_three_factors = ff_three_factors.astype(float)
+    print(ff_three_factors.dtypes)
 
     # Rename the first column to 'Date'
     ff_three_factors.rename(columns={'Unnamed: 0': 'Date'}, inplace=True)

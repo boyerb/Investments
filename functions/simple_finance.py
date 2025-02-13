@@ -227,10 +227,10 @@ def portfolio_sharpe(weights: np.ndarray, expected_returns: np.ndarray,
         raise TypeError("covariance_matrix must be a NumPy array")
 
     # Ensure correct dimensions
-    if weights.ndim != 1:
-        raise ValueError("weights must be a 1D array")
-    if expected_returns.ndim != 1:
-        raise ValueError("expected_returns must be a 1D array")
+    if weights.ndim != 2 or weights.shape[1] != 1:
+        raise ValueError("weights must be a 2D column vector with shape (N,1)")
+    if expected_returns.ndim != 2 or expected_returns.shape[1] != 1:
+        raise ValueError("expected_returns must be a 2D column vector with shape (N,1)")
     if covariance_matrix.ndim != 2:
         raise ValueError("covariance_matrix must be a 2D array")
 

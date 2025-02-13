@@ -268,15 +268,21 @@ def tangent_portfolio(expected_returns, covariance_matrix, rf):
     tuple: A tuple containing the tangent portfolio weights, expected return, and volatility.
     """
     N = expected_returns.shape[0]
-    initial_weights = np.ones((N,1)) / N
+    initial_weights = np.ones((N, 1)) / N  # Initialize as a 2D column vector
     constraints = ({'type': 'eq', 'fun': lambda x: np.sum(x) - 1})  # Constraint: weights sum to 1
 
     # Define a lambda function to negate the output of portfolio_sharpe
     neg_portfolio_sharpe = lambda x, expected_returns, covariance_matrix, rf: -portfolio_sharpe(x, expected_returns, covariance_matrix, rf)
 
-    result = minimize(fun=neg_portfolio_sharpe, x0=initial_weights, args=(
-    expected_returns, covariance_matrix, rf), method="SLSQP", constraints=constraints)
+    # Perform optimization
+    result = minimize(fun=neg_portfolio_sharpe, x0=initial_weights, args=(expected_returns, covariance_matrix, rf),
+                      method="SLSQP", constraints=constraints)
 
-    Er = result.x @ expected_returns
-    vol = portfolio_volatility(result.x, covariance_matrix)
-    return result.x, Er, vol
+    # Ensure result.x is reshaped as a column vector (N x 1)
+    tangent_weights = result.x.reshape(-1, 1)
+
+    # Compute expected return and volatility for the tangent portfolio
+    tangent_return = tangent_weights.T @ expected_returns
+    tangent_volatility = portfolio_volatility(tangent_weights, covariance_matrix)
+
+    return tangent_weights, tangent_return, tangent_volatility

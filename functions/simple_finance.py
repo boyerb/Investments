@@ -182,7 +182,8 @@ def EFRS_portfolio(target_return, expected_returns, covariance_matrix):
         constraints=constraints,  # constraints
     )
 
-    Ereturns = [w.T @ expected_returns for w in EFRS]
-    volatilities = [portfolio_volatility(w, covariance_matrix) for w in EFRS]
+    optimal_weights=result.x
+    Ereturn = optimal_weights.T @ expected_returns
+    volatility = portfolio_volatility(optimal_weights, covariance_matrix)
 
-    return result.x
+    return result.x, Ereturn, volatility

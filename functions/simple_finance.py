@@ -1,5 +1,4 @@
 import zipfile
-from io import BytesIO
 import pandas as pd
 import yfinance as yf
 import requests
@@ -8,11 +7,8 @@ import ssl
 import urllib.request
 import certifi
 import urllib.request
-import os
-from requests.adapters import HTTPAdapter
-from urllib3.poolmanager import PoolManager
-import urllib3
 import statsmodels.api as sm
+import numpy as np
 """
 This functions downloads and processes the Fama-French 5-Factor data from the Dartmouth website using the 'requests' library. 
 """
@@ -152,3 +148,40 @@ def slope(y,x):
 
     # Return the slope (coefficient of x)
     return results.params[1]  # The slope is the second parameter (after the intercept)
+####################################################################################################
+# Function 1
+def portfolio_volatility(weights, covariance_matrix):
+    return np.sqrt(weights.T @ covariance_matrix @ weights)  # Essential Math Fact #5
+####################################################################################################
+
+# Function 2
+def EFRS_portfolio(target_return, expected_returns, covariance_matrix):
+    # Define constraints (tuple with two dictionaries)
+    constraints = (# Constraint 1: Ensure portfolio return equals the target return
+        # "type": "eq" specifies an equality constraint (must be exactly zero)
+        # "fun": defines the function
+        {"type": "eq", "fun": lambda w: w.T @ expected_returns - target_return},
+
+        # Constraint 2: Ensure portfolio weights sum to 1 (fully invested)
+        # "type": "eq" specifies an equality constraint (must be exactly zero)
+        # "fun": defines the function
+        {"type": "eq", "fun": lambda w: np.sum(w) - 1},)
+
+    # starting values
+    initial_weights = np.ones(3) / 3
+
+    # Python's version of Excel Solver
+    # the function to minimize is portfolio_volatility
+    # the variables to change are defined by the first input to the function
+    # in this case the first argument is the vector of portfolio weights
+    result = minimize(fun=portfolio_volatility,  # function to minimize
+        x0=initial_weights,  # starting values
+        args=(covariance_matrix),  # additional arguments needed for function
+        method="SLSQP",  # minimization method
+        constraints=constraints,  # constraints
+    )
+
+    Ereturns = [w.T @ expected_returns for w in EFRS]
+    volatilities = [portfolio_volatility(w, covariance_matrix) for w in EFRS]
+
+    return result.x

@@ -9,6 +9,7 @@ import certifi
 import urllib.request
 import statsmodels.api as sm
 import numpy as np
+from scipy.optimize import minimize
 """
 This functions downloads and processes the Fama-French 5-Factor data from the Dartmouth website using the 'requests' library. 
 """

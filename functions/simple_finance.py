@@ -150,12 +150,9 @@ def slope(y,x):
     # Return the slope (coefficient of x)
     return results.params[1]  # The slope is the second parameter (after the intercept)
 ####################################################################################################
-# Function 1
 def portfolio_volatility(weights, covariance_matrix):
     return np.sqrt(weights.T @ covariance_matrix @ weights)  # Essential Math Fact #5
 ####################################################################################################
-
-# Function 2
 def EFRS_portfolio(target_return, expected_returns, covariance_matrix):
     # Define constraints (tuple with two dictionaries)
     constraints = (# Constraint 1: Ensure portfolio return equals the target return
@@ -187,3 +184,19 @@ def EFRS_portfolio(target_return, expected_returns, covariance_matrix):
     volatility = portfolio_volatility(optimal_weights, covariance_matrix)
 
     return result.x, Ereturn, volatility
+
+####################################################################################################
+def portfolio_sharpe(weights, expected_returns, covariance_matrix, rf):
+    port_ret = weights.T @ expected_returns # sum product of weights and expected returns
+    port_vol = portfolio_volatility(weights, covariance_matrix)
+    return (port_ret - rf) / port_vol
+####################################################################################################
+def tangent_portfolio(expected_returns, covariance_matrix, rf):
+    constraints = (
+        {"type": "eq", "fun": lambda w: np.sum(w) - 1},)
+    N=expected_returns.shape[0]
+    initial_weights = np.ones(N) / N
+    result = minimize(fun=-portfolio_sharpe, x0=initial_weights, args=(expected_returns, covariance_matrix, rf), method="SLSQP", constraints=constraints)
+    Er = result.x @ expected_returns
+    vol = portfolio_volatility(result.x, covariance_matrix)
+    return result.x, Er, vol

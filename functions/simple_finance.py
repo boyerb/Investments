@@ -10,6 +10,7 @@ import urllib.request
 import statsmodels.api as sm
 import numpy as np
 from scipy.optimize import minimize
+from io import BytesIO
 """
 This functions downloads and processes the Fama-French 5-Factor data from the Dartmouth website using the 'requests' library. 
 """
@@ -45,7 +46,7 @@ def get_ff5():
 This functions downloads and processes the Fama-French 3-Factor data from the Dartmouth website using the 'requests' library. 
 """
 #########################################################################################################################
-def get_ff3():
+def get_ff3(start_date=None, end_date=None):
     #http = urllib3.PoolManager(cert_reqs="CERT_REQUIRED", ca_certs=certifi.where())
     #http.request("GET", "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Research_Data_Factors_CSV.zip")
 
@@ -63,26 +64,81 @@ def get_ff3():
             ff_three_factors = pd.read_csv(f, skiprows=3)
 
     # Use str.match to identify rows with dates (6-digit YYYYMM format), and drop NaN values that could arise
-    ff_3 = ff_three_factors[ff_three_factors['Unnamed: 0'].str.match(r'^\d{6}$', na=False)] # gets rid of Copyright line
-    ff_three_factors=ff_3.copy()
-    ff_three_factors = ff_three_factors.astype(float)
+   # start_index = ff_three_factors[ff_three_factors.iloc[:, 0].dropna().str.contains("Annual Factors: January-December")].index[0]
+    start_index = ff_three_factors[ff_three_factors.iloc[:, 0].str.contains("Annual Factors: January-December", na=False)].index[0]
+    ff3_1 = ff_three_factors.iloc[:start_index]
 
-    # Rename the first column to 'Date'
-    ff_three_factors.rename(columns={'Unnamed: 0': 'Date'}, inplace=True)
+    ff3_2=ff3_1.copy()
+    ff3_2.rename(columns={'Unnamed: 0': 'date'}, inplace=True)
 
-    # Convert the Date column to datetime format (YYYY-MM)
-    ff_three_factors['Date'] = pd.to_datetime(ff_three_factors['Date'], format='%Y%m').dt.to_period()
-
-    # Convert all columns except 'Date' to numeric types
-    ff_three_factors.iloc[:, 1:] = ff_three_factors.iloc[:, 1:].apply(pd.to_numeric, errors='coerce')
-
-    # Multiply all columns except 'Date' by 0.01
-    ff_three_factors.iloc[:, 1:] = (ff_three_factors.iloc[:, 1:] * 0.01)
+    # Convert first column to Period
+    ff3_2['date'] = pd.to_datetime(ff3_2['date'].astype(str), format='%Y%m').dt.to_period()
+    ff3_2.iloc[:, 1:] = ff3_2.iloc[:, 1:].astype(float) * 0.01
 
     # reset the index
-    ff_three_factors.set_index('Date', inplace=True)
+    ff3_2.set_index('date', inplace=True)
 
-    return ff_three_factors
+    # Apply date range filtering if provided
+    if start_date is not None:
+        ff3_2 = ff3_2[ff3_2.index >= pd.Period(start_date, freq='M')]
+    if end_date is not None:
+        ff3_2 = ff3_2[ff3_2.index <= pd.Period(end_date, freq='M')]
+
+    return ff3_2
+#########################################################################################################################
+def get_ff_beta_portfolios(dtype, start_date=None, end_date=None):
+    #http = urllib3.PoolManager(cert_reqs="CERT_REQUIRED", ca_certs=certifi.where())
+    #http.request("GET", "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Research_Data_Factors_CSV.zip")
+
+    # Make the request using the session
+    url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/Portfolios_Formed_on_BETA_CSV.zip"
+    response = requests.get(url)
+
+    # Read the content of the file
+    zip_content = response.content
+
+    # Open the zip file from the content
+    with zipfile.ZipFile(io.BytesIO(zip_content)) as zf:
+        with zf.open('Portfolios_Formed_on_BETA.csv') as f:
+            # Read the CSV file content (you can load it into pandas or process as needed)
+            dat = pd.read_csv(f, skiprows=15, header=0)
+
+    start_index = dat[dat.iloc[:, 0].str.contains("Equal Weighted Returns -- Monthly", na=False)].index[0]
+    dat1 = dat.iloc[:start_index]
+    dat2=dat1.copy()
+    dat2.rename(columns={'Unnamed: 0': 'date'}, inplace=True)
+
+    # Convert first column to Period
+    dat2['date'] = pd.to_datetime(dat2['date'].astype(str), format='%Y%m').dt.to_period()
+    dat2.iloc[:, 1:] = dat2.iloc[:, 1:].astype(float) * 0.01
+
+    # reset the index
+    dat2.set_index('date', inplace=True)
+
+    if dtype == 'quintiles':
+        cols = ['Lo 20', 'Qnt 2', 'Qnt 3', 'Qnt 4', 'Hi 20']
+    elif dtype == 'deciles':
+        cols = ['Lo 10', 'Dec 2', 'Dec 3', 'Dec 4', 'Dec 5',
+                'Dec 6', 'Dec 7', 'Dec 8', 'Dec 9', 'Hi 10']
+    else:
+        raise ValueError("Invalid data type. Choose 'quintiles' or 'deciles'.")
+
+    dat3 = dat2[cols].copy()  # Select relevant columns
+    dat3.index = dat2.index  # Keep the index (assumed to be a PeriodIndex)
+
+    # Apply date range filtering if provided
+    if start_date is not None:
+        dat3 = dat3[dat3.index >= pd.Period(start_date, freq='M')]
+    if end_date is not None:
+        dat3 = dat3[dat3.index <= pd.Period(end_date, freq='M')]
+
+    ff3=get_ff3()
+    ff3['mkt']=ff3['Mkt-RF']+ff3['RF']
+    ff3.rename(columns={'RF':'rf'},inplace=True)
+    dat3=pd.merge(dat3,ff3[['mkt','rf']],left_index=True,right_index=True,how='left')
+    return dat3
+
+
 
 
 ####################################################################################################

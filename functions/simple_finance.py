@@ -179,12 +179,14 @@ def get_ff_strategies(stype, start_date=None, end_date=None, details=None):
 
         # reset the index
         dat2.set_index('date', inplace=True)
-        cols = ['Lo 10', 'Dec 2', 'Dec 3', 'Dec 4', 'Dec 5',
-                'Dec 6', 'Dec 7', 'Dec 8', 'Dec 9', 'Hi 10']
+        dat2.rename(columns={'Lo 10': 'Dec 1', 'Hi 10': 'Dec 10'}, inplace=True)
+        cols = ['Dec 1', 'Dec 2', 'Dec 3', 'Dec 4', 'Dec 5',
+                'Dec 6', 'Dec 7', 'Dec 8', 'Dec 9', 'Dec 10']
 
         dat3 = dat2[cols].copy()  # Select relevant columns
         dat3.index = dat2.index  # Keep the index (assumed to be a PeriodIndex)
 
+    #-------------------------------------------
     elif stype == "momentum":
         if details is True:
             print("----------------")
@@ -221,9 +223,9 @@ def get_ff_strategies(stype, start_date=None, end_date=None, details=None):
         dat1 = dat.iloc[:start_index]
         dat2 = dat1.copy()
         dat2.rename(columns={'Unnamed: 0': 'date'}, inplace=True)
-        dat2.rename(columns={'Lo PRIOR': 'Lo 10', 'PRIOR 2': 'Dec 2', 'PRIOR 3': 'Dec 3', 'PRIOR 4': 'Dec 4'}, inplace=True)
+        dat2.rename(columns={'Lo PRIOR': 'Dec 1', 'PRIOR 2': 'Dec 2', 'PRIOR 3': 'Dec 3', 'PRIOR 4': 'Dec 4'}, inplace=True)
         dat2.rename(columns={'PRIOR 5': 'Dec 5', 'PRIOR 6': 'Dec 6', 'PRIOR 7': 'Dec 7', 'PRIOR 8': 'Dec 8'}, inplace=True)
-        dat2.rename(columns={'PRIOR 9': 'Dec 9', 'Hi PRIOR': 'Hi 10'}, inplace=True)
+        dat2.rename(columns={'PRIOR 9': 'Dec 9', 'Hi PRIOR': 'Dec 10'}, inplace=True)
 
         # Convert first column to Period
         dat2['date'] = pd.to_datetime(dat2['date'].astype(str), format='%Y%m').dt.to_period()
@@ -237,7 +239,7 @@ def get_ff_strategies(stype, start_date=None, end_date=None, details=None):
     else:
         raise ValueError("Invalid strategy type. Choose 'beta' or 'momentum'.")
 
-    ##############################################################################
+    #------------------------------------------
     # Apply date range filtering if provided
     if start_date is not None:
         dat3 = dat3[dat3.index >= pd.Period(start_date, freq='M')]

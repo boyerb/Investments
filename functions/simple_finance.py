@@ -153,7 +153,7 @@ def get_ff_strategies(stype, start_date=None, end_date=None, details=None):
 
             print("Stocks: All NYSE, AMEX, and NASDAQ stocks for which we have market equity data for June of t and good returns for the preceding 60 months (24 months minimum)."
                   )
-            return
+
 
         # Make the request using the session
         url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/Portfolios_Formed_on_BETA_CSV.zip"

@@ -137,6 +137,118 @@ def get_ff_beta_portfolios(dtype, start_date=None, end_date=None):
     ff3.rename(columns={'RF':'rf'},inplace=True)
     dat3=pd.merge(dat3,ff3[['mkt','rf']],left_index=True,right_index=True,how='left')
     return dat3
+####################################################################################################
+def get_ff_strategies(stype, start_date=None, end_date=None, details=None):
+
+    if stype == 'beta':
+        if details is True:
+            print("----------------")
+            print("Beta Strategy")
+            print("----------------")
+            print(print("Basic Strategy: stocks are sorted into deciles based on their historical betas."))
+            print()
+            print("Construction: The portfolios are formed on univariate market beta at the end of each June using NYSE breakpoints.")
+            print("Beta for June of year t is estimated using the preceding five years (two minimum) of past monthly returns.")
+            print()
+
+            print("Stocks: All NYSE, AMEX, and NASDAQ stocks for which we have market equity data for June of t and good returns for the preceding 60 months (24 months minimum)."
+                  )
+            return
+
+        # Make the request using the session
+        url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/Portfolios_Formed_on_BETA_CSV.zip"
+        response = requests.get(url)
+
+        # Read the content of the file
+        zip_content = response.content
+
+        # Open the zip file from the content
+        with zipfile.ZipFile(io.BytesIO(zip_content)) as zf:
+            with zf.open('Portfolios_Formed_on_BETA.csv') as f:
+                # Read the CSV file content (you can load it into pandas or process as needed)
+                dat = pd.read_csv(f, skiprows=15, header=0)
+
+        start_index = dat[dat.iloc[:, 0].str.contains("Equal Weighted Returns -- Monthly", na=False)].index[0]
+        dat1 = dat.iloc[:start_index]
+        dat2=dat1.copy()
+        dat2.rename(columns={'Unnamed: 0': 'date'}, inplace=True)
+
+        # Convert first column to Period
+        dat2['date'] = pd.to_datetime(dat2['date'].astype(str), format='%Y%m').dt.to_period()
+        dat2.iloc[:, 1:] = dat2.iloc[:, 1:].astype(float) * 0.01
+
+        # reset the index
+        dat2.set_index('date', inplace=True)
+        cols = ['Lo 10', 'Dec 2', 'Dec 3', 'Dec 4', 'Dec 5',
+                'Dec 6', 'Dec 7', 'Dec 8', 'Dec 9', 'Hi 10']
+
+        dat3 = dat2[cols].copy()  # Select relevant columns
+        dat3.index = dat2.index  # Keep the index (assumed to be a PeriodIndex)
+
+    elif stype == "momentum":
+        if details is True:
+            print("----------------")
+            print("Momentum Strategy")
+            print("----------------")
+            print("Basic Strategy: stocks are sorted into deciles based on their prior 12-month returns, excluding the most recent month.")
+            print()
+            print("Construction: The portfolios are constructed monthly using NYSE prior (2-12) return decile breakpoints.")
+            print()
+            print("Stocks: The portfolios constructed each month include NYSE, AMEX, and NASDAQ stocks with prior return data.")
+            print("To be included in a portfolio for month t (formed at the end of month t-1), a stock must have a price for the")
+            print("end of month t-13 and a good return for t-2. In addition, any missing returns from t-12 to t-3 must be -99.0,")
+            print("CRSP's code for a missing price. Each included stock also must have ME for the end of month t-1.")
+
+            return
+        # Continue the momentum strategy implementation below
+
+        # Make the request using the session
+        url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/10_Portfolios_Prior_12_2_CSV.zip"
+        response = requests.get(url)
+
+        # Read the content of the file
+        zip_content = response.content
+
+        # Open the zip file from the content
+        with zipfile.ZipFile(io.BytesIO(zip_content)) as zf:
+            with zf.open('10_Portfolios_Prior_12_2.CSV') as f:
+                # Read the CSV file content (you can load it into pandas or process as needed)
+                dat = pd.read_csv(f, skiprows=10, header=0)
+
+
+
+        start_index = dat[dat.iloc[:, 0].str.contains("  Average Equal Weighted Returns -- Monthly", na=False)].index[0]
+        dat1 = dat.iloc[:start_index]
+        dat2 = dat1.copy()
+        dat2.rename(columns={'Unnamed: 0': 'date'}, inplace=True)
+        dat2.rename(columns={'Lo PRIOR': 'Lo 10', 'PRIOR 2': 'Dec 2', 'PRIOR 3': 'Dec 3', 'PRIOR 4': 'Dec 4'}, inplace=True)
+        dat2.rename(columns={'PRIOR 5': 'Dec 5', 'PRIOR 6': 'Dec 6', 'PRIOR 7': 'Dec 7', 'PRIOR 8': 'Dec 8'}, inplace=True)
+        dat2.rename(columns={'PRIOR 9': 'Dec 9', 'Hi PRIOR': 'Hi 10'}, inplace=True)
+
+        # Convert first column to Period
+        dat2['date'] = pd.to_datetime(dat2['date'].astype(str), format='%Y%m').dt.to_period()
+        dat2.iloc[:, 1:] = dat2.iloc[:, 1:].astype(float) * 0.01
+
+        # reset the index
+        dat2.set_index('date', inplace=True)
+        dat3=dat2.copy()  # Select relevant columns
+        dat3.index = dat2.index  # Keep the index (assumed to be a PeriodIndex)
+
+    else:
+        raise ValueError("Invalid strategy type. Choose 'beta' or 'momentum'.")
+
+    ##############################################################################
+    # Apply date range filtering if provided
+    if start_date is not None:
+        dat3 = dat3[dat3.index >= pd.Period(start_date, freq='M')]
+    if end_date is not None:
+        dat3 = dat3[dat3.index <= pd.Period(end_date, freq='M')]
+
+    ff3=get_ff3()
+    ff3['mkt']=ff3['Mkt-RF']+ff3['RF']
+    ff3.rename(columns={'RF':'rf'},inplace=True)
+    dat_final=pd.merge(dat3,ff3[['mkt','rf']],left_index=True,right_index=True,how='left')
+    return dat_final
 
 
 

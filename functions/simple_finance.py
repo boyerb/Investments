@@ -101,19 +101,6 @@ def get_ff3(start_date=None, end_date=None):
 def get_ff_strategies(stype, start_date=None, end_date=None, details=None):
 
     if stype == 'beta':
-        if details is True:
-            print("----------------")
-            print("Beta Strategy")
-            print("----------------")
-            print(print("Basic Strategy: stocks are sorted into deciles based on their historical betas."))
-            print()
-            print("Construction: The portfolios are formed on univariate market beta at the end of each June using NYSE breakpoints.")
-            print("Beta for June of year t is estimated using the preceding five years (two minimum) of past monthly returns.")
-            print()
-
-            print("Stocks: All NYSE, AMEX, and NASDAQ stocks for which we have market equity data for June of t and good returns for the preceding 60 months (24 months minimum)."
-                  )
-
 
         # Make the request using the session
         url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/Portfolios_Formed_on_BETA_CSV.zip"
@@ -150,23 +137,28 @@ def get_ff_strategies(stype, start_date=None, end_date=None, details=None):
 
         dat3 = dat2[cols].copy()  # Select relevant columns
         dat3.index = dat2.index  # Keep the index (assumed to be a PeriodIndex)
+        if details is True:
+            print("----------------")
+            print("Beta Strategy")
+            print("----------------")
+            print(print("Basic Strategy: stocks are sorted into deciles based on their historical betas."))
+            print()
+            print("Construction: The portfolios are formed on univariate market beta at the end of each June using NYSE breakpoints.")
+            print("Beta for June of year t is estimated using the preceding five years (two minimum) of past monthly returns.")
+            print()
+
+            print("Stocks: All NYSE, AMEX, and NASDAQ stocks for which we have market equity data for June of t and good returns for the preceding 60 months (24 months minimum)."
+                  )
+            min_date = dat3.index.min()
+            max_date = dat3.index.max()
+
+            print(f"Min Date: {min_date}, Max Date: {max_date}")
+
 
     #-------------------------------------------
     elif stype == "momentum":
-        if details is True:
-            print("----------------")
-            print("Momentum Strategy")
-            print("----------------")
-            print("Basic Strategy: stocks are sorted into deciles based on their prior 12-month returns, excluding the most recent month.")
-            print()
-            print("Construction: The portfolios are constructed monthly using NYSE prior (2-12) return decile breakpoints.")
-            print()
-            print("Stocks: The portfolios constructed each month include NYSE, AMEX, and NASDAQ stocks with prior return data.")
-            print("To be included in a portfolio for month t (formed at the end of month t-1), a stock must have a price for the")
-            print("end of month t-13 and a good return for t-2. In addition, any missing returns from t-12 to t-3 must be -99.0,")
-            print("CRSP's code for a missing price. Each included stock also must have ME for the end of month t-1.")
 
-            return
+
         # Continue the momentum strategy implementation below
 
         # Make the request using the session
@@ -203,6 +195,23 @@ def get_ff_strategies(stype, start_date=None, end_date=None, details=None):
         dat2.set_index('date', inplace=True)
         dat3=dat2.copy()  # Select relevant columns
         dat3.index = dat2.index  # Keep the index (assumed to be a PeriodIndex)
+        if details is True:
+            print("----------------")
+            print("Momentum Strategy")
+            print("----------------")
+            print("Basic Strategy: stocks are sorted into deciles based on their prior 12-month returns, excluding the most recent month.")
+            print()
+            print("Construction: The portfolios are constructed monthly using NYSE prior (2-12) return decile breakpoints.")
+            print()
+            print("Stocks: The portfolios constructed each month include NYSE, AMEX, and NASDAQ stocks with prior return data.")
+            print("To be included in a portfolio for month t (formed at the end of month t-1), a stock must have a price for the")
+            print("end of month t-13 and a good return for t-2. In addition, any missing returns from t-12 to t-3 must be -99.0,")
+            print("CRSP's code for a missing price. Each included stock also must have ME for the end of month t-1.")
+            min_date = dat3.index.min()
+            max_date = dat3.index.max()
+
+            print(f"Min Date: {min_date}, Max Date: {max_date}")
+
 
     else:
         raise ValueError("Invalid strategy type. Choose 'beta' or 'momentum'.")

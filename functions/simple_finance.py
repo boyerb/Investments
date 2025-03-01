@@ -151,7 +151,7 @@ def get_ff_strategies(stype, start_date=None, end_date=None, details=None):
                   )
             min_date = dat3.index.min()
             max_date = dat3.index.max()
-
+            print()
             print(f"Min Date: {min_date}, Max Date: {max_date}")
 
 
@@ -209,7 +209,7 @@ def get_ff_strategies(stype, start_date=None, end_date=None, details=None):
             print("CRSP's code for a missing price. Each included stock also must have ME for the end of month t-1.")
             min_date = dat3.index.min()
             max_date = dat3.index.max()
-
+            print()
             print(f"Min Date: {min_date}, Max Date: {max_date}")
 
 

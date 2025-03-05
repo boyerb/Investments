@@ -146,7 +146,7 @@ def get_ff_strategies(stype, start_date=None, end_date=None, details=None):
             print("----------------")
             print("Beta Strategy")
             print("----------------")
-            print(print("Basic Strategy: stocks are sorted into deciles based on their historical betas."))
+            print("Basic Strategy: stocks are sorted into deciles based on their historical betas.")
             print()
             print("Construction: The portfolios are formed on univariate market beta at the end of each June using NYSE breakpoints.")
             print("Beta for June of year t is estimated using the preceding five years (two minimum) of past monthly returns.")

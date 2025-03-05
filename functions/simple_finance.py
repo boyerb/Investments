@@ -22,43 +22,50 @@ pd.set_option('display.max_colwidth', None)  # Show full column content without 
 """
 This functions downloads and processes the Fama-French 5-Factor data from the Dartmouth website using the 'requests' library. 
 """
-def get_ff5():
+def get_ff5(start_date=None, end_date=None):
     url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Research_Data_5_Factors_2x3_CSV.zip"
+    response = requests.get(url)
 
-    # Read the zipped CSV file from the URL
-    context = ssl.create_default_context(cafile=certifi.where())
-    with urllib.request.urlopen(url, context=context) as response:
-        ff_five_factors = pd.read_csv(url, skiprows=3)
+    # Read the content of the file
+    zip_content = response.content
 
-    # Use str.match to identify rows with dates (6-digit YYYYMM format), and drop NaN values that could arise
-    ff_five_factors = ff_five_factors[ff_five_factors['Unnamed: 0'].str.match(r'^\d{6}$', na=False)]
+    # Open the zip file from the content
+    with zipfile.ZipFile(io.BytesIO(zip_content)) as zf:
+        with zf.open('F-F_Research_Data_5_Factors_2x3.csv') as f:
+            # Read the CSV file content (you can load it into pandas or process as needed)
+            ff_five_factors = pd.read_csv(f, skiprows=3)
 
-    # Rename the first column to 'Date'
-    ff_five_factors.rename(columns={'Unnamed: 0': 'Date'}, inplace=True)
+    start_index = ff_five_factors[ff_five_factors.iloc[:, 0].str.contains("Annual Factors: January-December", na=False)].index[0]
+    ff5_1 = ff_five_factors.iloc[:start_index]
 
-    # Convert the Date column to datetime format (YYYY-MM)
-    ff_five_factors['Date'] = pd.to_datetime(ff_five_factors['Date'], format='%Y%m')
+    ff5_2=ff5_1.copy()
+    ff5_2.rename(columns={'Unnamed: 0': 'date'}, inplace=True)
 
-    # Convert all columns except 'Date' to numeric types
-    ff_five_factors.iloc[:, 1:] = ff_five_factors.iloc[:, 1:].apply(pd.to_numeric, errors='coerce')
+    # Convert first column to Period
+    ff5_2['date'] = pd.to_datetime(ff5_2['date'].astype(str), format='%Y%m').dt.to_period()
+    # Convert all columns except 'date' to numeric types
+    for col in ff5_2.columns[1:]:  # Skip the 'date' column
+        ff5_2[col] = pd.to_numeric(ff5_2[col], errors='coerce')
 
-    # Multiply all columns except 'Date' by 0.01
-    ff_five_factors.iloc[:, 1:] = ff_five_factors.iloc[:, 1:] * 0.01
+    ff5_2.iloc[:, 1:] = ff5_2.iloc[:, 1:] * 0.01
 
     # reset the index
-    ff_five_factors.set_index('Date', inplace=True)
+    ff5_2.set_index('date', inplace=True)
 
-    return ff_five_factors
+    # Apply date range filtering if provided
+    if start_date is not None:
+        ff5_2 = ff5_2[ff5_2.index >= pd.Period(start_date, freq='M')]
+    if end_date is not None:
+        ff5_2 = ff5_2[ff5_2.index <= pd.Period(end_date, freq='M')]
+
+    return ff5_2
 
 """
 This functions downloads and processes the Fama-French 3-Factor data from the Dartmouth website using the 'requests' library. 
 """
 #########################################################################################################################
 def get_ff3(start_date=None, end_date=None):
-    #http = urllib3.PoolManager(cert_reqs="CERT_REQUIRED", ca_certs=certifi.where())
-    #http.request("GET", "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Research_Data_Factors_CSV.zip")
 
-    # Make the request using the session
     url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Research_Data_Factors_CSV.zip"
     response = requests.get(url)
 
@@ -71,8 +78,6 @@ def get_ff3(start_date=None, end_date=None):
             # Read the CSV file content (you can load it into pandas or process as needed)
             ff_three_factors = pd.read_csv(f, skiprows=3)
 
-    # Use str.match to identify rows with dates (6-digit YYYYMM format), and drop NaN values that could arise
-   # start_index = ff_three_factors[ff_three_factors.iloc[:, 0].dropna().str.contains("Annual Factors: January-December")].index[0]
     start_index = ff_three_factors[ff_three_factors.iloc[:, 0].str.contains("Annual Factors: January-December", na=False)].index[0]
     ff3_1 = ff_three_factors.iloc[:start_index]
 

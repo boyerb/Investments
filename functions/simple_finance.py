@@ -228,10 +228,10 @@ def get_ff_strategies(stype, start_date=None, end_date=None, details=None):
     if end_date is not None:
         dat3 = dat3[dat3.index <= pd.Period(end_date, freq='M')]
 
-    ff3=get_ff3()
-    ff3['mkt']=ff3['Mkt-RF']+ff3['RF']
-    ff3.rename(columns={'RF':'rf'},inplace=True)
-    dat_final=pd.merge(dat3,ff3[['mkt','rf']],left_index=True,right_index=True,how='left')
+    ff5=get_ff5()
+    ff5['mkt']=ff5['Mkt-RF']+ff5['RF']
+    ff5.rename(columns={'SMB':'smb', 'HML':'hml', 'RMW':'rmw', 'CMA':'cma', 'RF':'rf'},inplace=True)
+    dat_final=pd.merge(dat3,ff5[['mkt','smb','hml','rmw','cma','rf']],left_index=True,right_index=True,how='inner')
     return dat_final
 
 

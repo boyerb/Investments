@@ -412,7 +412,7 @@ def portfolio_sharpe(weights: np.ndarray, expected_returns: np.ndarray,
     return Sharpe
 
 ####################################################################################################
-def tangent_portfolio(expected_returns, covariance_matrix, rf=None, zerocost=None):
+def tangent_portfolio(expected_returns, covariance_matrix, rf=None, factors=None):
     """
     Calculates the weights, expected return, and volatility of the tangent portfolio.
 
@@ -427,7 +427,7 @@ def tangent_portfolio(expected_returns, covariance_matrix, rf=None, zerocost=Non
     N = expected_returns.shape[0]
     initial_weights = np.ones(N) / N  # Initialize as a 1D column vector
 
-    if zerocost!=True:
+    if factors!=True:
         constraints = ({'type': 'eq', 'fun': lambda x: np.sum(x) - 1})  # Constraint: weights sum to 1
 
         # Define a lambda function to negate the output of portfolio_sharpe

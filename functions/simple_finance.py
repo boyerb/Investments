@@ -273,6 +273,58 @@ def get_ff_strategies(stype, start_date=None, end_date=None, details=None):
             print()
             print(f"Min Date: {min_date}, Max Date: {max_date}")
 
+    #------------------------------------------
+    elif stype == 'accruals':
+
+        # Make the request using the session
+        url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/Portfolios_Formed_on_AC_CSV.zip"
+        response = requests.get(url)
+
+        # Read the content of the file
+        zip_content = response.content
+
+        # Open the zip file from the content
+        with zipfile.ZipFile(io.BytesIO(zip_content)) as zf:
+            with zf.open('Portfolios_Formed_on_AC.csv') as f:
+                # Read the CSV file content (you can load it into pandas or process as needed)
+                dat = pd.read_csv(f, skiprows=17, header=0, encoding='utf-8', skipfooter=5, engine='python')
+
+        start_index = dat[dat.iloc[:, 0].str.contains("Equal Weighted Returns -- Monthly", na=False)].index[0]
+        dat1 = dat.iloc[:start_index]
+        dat2 = dat1.copy()
+        dat2.rename(columns={'Unnamed: 0': 'date'}, inplace=True)
+
+        # Convert first column to Period
+        dat2['date'] = pd.to_datetime(dat2['date'].astype(str), format='%Y%m').dt.to_period()
+
+        # Convert all columns except 'date' to numeric types
+        for col in dat2.columns[1:]:  # Skip the 'date' column
+            dat2[col] = pd.to_numeric(dat2[col], errors='coerce')
+
+        dat2.iloc[:, 1:] = dat2.iloc[:, 1:] * 0.01
+
+        # reset the index
+        dat2.set_index('date', inplace=True)
+        dat2.rename(columns={'Lo 10': 'Dec 1', 'Hi 10': 'Dec 10'}, inplace=True)
+        cols = ['Dec 1', 'Dec 2', 'Dec 3', 'Dec 4', 'Dec 5',
+                'Dec 6', 'Dec 7', 'Dec 8', 'Dec 9', 'Dec 10']
+
+        dat3 = dat2[cols].copy()  # Select relevant columns
+        dat3.index = dat2.index  # Keep the index (assumed to be a PeriodIndex)
+        if details is True:
+            print("----------------")
+            print("Accruals Strategy")
+            print("----------------")
+            print("The portfolios are formed on Accruals(AC) at the end of each June using NYSE breakpoints.")
+            print("AC for June of year t is the change in operating working capital per split-adjusted share from")
+            print("the fiscal yearend t-2 to t-1 divided by book equity per share in t-1.")
+            print("Each portfolio is value-weighted.")
+
+            min_date = dat3.index.min()
+            max_date = dat3.index.max()
+            print()
+            print(f"Min Date: {min_date}, Max Date: {max_date}")
+
     else:
         raise ValueError("Invalid strategy type. Choose 'beta', 'momentum', or 'shortermreversal'.")
 

@@ -120,7 +120,7 @@ def get_ff_strategies(stype, start_date=None, end_date=None, details=None):
                 # Read the CSV file content (you can load it into pandas or process as needed)
                 dat = pd.read_csv(f, skiprows=15, header=0, encoding='utf-8', skipfooter=5, engine='python')
 
-        start_index = dat[dat.iloc[:, 0].str.contains("  Equal Weighted Returns -- Monthly", na=False)].index[0]
+        start_index = dat[dat.iloc[:, 0].str.contains("Equal Weighted Returns -- Monthly", na=False)].index[0]
         dat1 = dat.iloc[:start_index]
         dat2 = dat1.copy()
         dat2.rename(columns={'Unnamed: 0': 'date'}, inplace=True)
@@ -181,7 +181,7 @@ def get_ff_strategies(stype, start_date=None, end_date=None, details=None):
 
 
 
-        start_index = dat[dat.iloc[:, 0].str.contains("  Average Equal Weighted Returns -- Monthly", na=False)].index[0]
+        start_index = dat[dat.iloc[:, 0].str.contains("Average Equal Weighted Returns -- Monthly", na=False)].index[0]
         dat1 = dat.iloc[:start_index]
         dat2 = dat1.copy()
         dat2.rename(columns={'Unnamed: 0': 'date'}, inplace=True)
@@ -218,8 +218,64 @@ def get_ff_strategies(stype, start_date=None, end_date=None, details=None):
             print(f"Min Date: {min_date}, Max Date: {max_date}")
 
 
+    #------------------------------------------
+    elif stype == 'shorttermreversal':
+
+        # Make the request using the session
+        url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/10_Portfolios_Prior_1_0_CSV.zip"
+        response = requests.get(url)
+
+        # Read the content of the file
+        zip_content = response.content
+
+        # Read the content of the file
+
+
+        # Open the zip file from the content
+        with zipfile.ZipFile(io.BytesIO(zip_content)) as zf:
+            with zf.open('10_Portfolios_Prior_1_0.CSV') as f:
+                # Read the CSV file content (you can load it into pandas or process as needed)
+                dat = pd.read_csv(f, skiprows=10, header=0, encoding='utf-8', skipfooter=5, engine='python')
+
+        start_index = dat[dat.iloc[:, 0].str.contains("Equal Weighted Returns -- Monthly", na=False)].index[0]
+        dat1 = dat.iloc[:start_index]
+        dat2 = dat1.copy()
+        dat2.rename(columns={'Unnamed: 0': 'date'}, inplace=True)
+
+        # Convert first column to Period
+        dat2['date'] = pd.to_datetime(dat2['date'].astype(str), format='%Y%m').dt.to_period()
+
+        # Convert all columns except 'date' to numeric types
+        for col in dat2.columns[1:]:  # Skip the 'date' column
+            dat2[col] = pd.to_numeric(dat2[col], errors='coerce')
+
+        dat2.iloc[:, 1:] = dat2.iloc[:, 1:] * 0.01
+
+        # reset the index
+        dat2.set_index('date', inplace=True)
+        dat2.rename(columns={'Lo PRIOR': 'Dec 1', 'PRIOR 2': 'Dec 2', 'PRIOR 3': 'Dec 3', 'PRIOR 4': 'Dec 4', 'PRIOR 5': 'Dec 5',
+                             'PRIOR 6': 'Dec 6', 'PRIOR 7': 'Dec 7', 'PRIOR 8': 'Dec 8', 'PRIOR 9': 'Dec 9', 'Hi PRIOR': 'Dec 10'}, inplace=True)
+        cols = ['Dec 1', 'Dec 2', 'Dec 3', 'Dec 4', 'Dec 5',
+                'Dec 6', 'Dec 7', 'Dec 8', 'Dec 9', 'Dec 10']
+
+        dat3 = dat2[cols].copy()  # Select relevant columns
+        dat3.index = dat2.index  # Keep the index (assumed to be a PeriodIndex)
+        if details is True:
+            print("----------------")
+            print("Short Term Reversal Strategy")
+            print("----------------")
+            print("Basic Strategy: stocks are sorted into deciles based on their prior 1-month return.")
+            print()
+            print("Construction: The portfolios are formed on the prior one-month return at the end of each month.")
+            print("Decile portfolios are value-weighted.")
+
+            min_date = dat3.index.min()
+            max_date = dat3.index.max()
+            print()
+            print(f"Min Date: {min_date}, Max Date: {max_date}")
+
     else:
-        raise ValueError("Invalid strategy type. Choose 'beta' or 'momentum'.")
+        raise ValueError("Invalid strategy type. Choose 'beta', 'momentum', or 'shortermreversal'.")
 
     #------------------------------------------
     # Apply date range filtering if provided

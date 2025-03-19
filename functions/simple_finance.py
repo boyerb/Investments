@@ -265,9 +265,8 @@ def get_ff_strategies(stype, start_date=None, end_date=None, details=None):
             print("Short Term Reversal Strategy")
             print("----------------")
             print("Basic Strategy: stocks are sorted into deciles based on their prior 1-month return.")
-            print()
             print("Construction: The portfolios are formed on the prior one-month return at the end of each month.")
-            print("Decile portfolios are value-weighted.")
+            print("Each portfolio is value-weighted.")
 
             min_date = dat3.index.min()
             max_date = dat3.index.max()

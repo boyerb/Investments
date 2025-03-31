@@ -590,7 +590,7 @@ def black_scholes(type, S, K, T, rf, sigma):
 ##################################################################################################
 def implied_volatility(type, option_price, S, K, T, r):
     def objective(sigma):
-        return black_scholes(S, K, T, r, sigma, type) - option_price
+        return black_scholes(type, S, K, T, r, sigma) - option_price
 
     try:
         return brentq(objective, 1e-6, 5.0)

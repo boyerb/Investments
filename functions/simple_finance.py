@@ -589,6 +589,7 @@ def black_scholes(type, S, K, T, rf, sigma):
     return option_price
 ##################################################################################################
 def implied_volatility(type, option_price, S, K, T, r):
+
     def objective(sigma):
         return black_scholes(type, S, K, T, r, sigma) - option_price
 

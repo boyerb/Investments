@@ -79,7 +79,8 @@ def get_crsp_msf_by_ids(
     base_sql = f"""
         SELECT 
             a.date, 
-            a.permno, 
+            a.permno,
+            a.permco, 
             b.ticker, 
             b.comnam, 
             b.shrcd, 

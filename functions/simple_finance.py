@@ -94,7 +94,7 @@ def get_crsp_msf_by_ids(
         INNER JOIN crspm.msenames b
             ON a.permno = b.permno
         WHERE a.date >= b.namedt 
-          AND a.date <= b.nameenddt
+          AND a.date <= b.nameendt
           AND a.date BETWEEN '{start_date}' AND '{end_date}'
     """
 

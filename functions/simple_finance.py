@@ -123,6 +123,7 @@ def get_crsp_msf_by_ids(
     # Optional: sort the result
     if not out.empty:
         out = out.sort_values(["permno", "date"]).reset_index(drop=True)
+        out['date'] = pd.to_datetime(out['date'])  # ensure that date is a datetime object
     return out
 
 

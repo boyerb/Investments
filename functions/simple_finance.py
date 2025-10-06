@@ -159,6 +159,8 @@ def get_ff5(start_date=None, end_date=None):
 
     # reset the index
     ff5_2.set_index('date', inplace=True)
+    # Reformat df2 index as monthly PeriodIndex
+    ff5_2.index = pd.PeriodIndex(ff5_2.index, freq="M")
 
     # Apply date range filtering if provided
     if start_date is not None:

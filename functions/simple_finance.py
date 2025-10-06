@@ -12,6 +12,8 @@ import numpy as np
 from scipy.optimize import minimize
 from scipy.stats import norm
 from scipy.optimize import brentq
+import pandas as pd
+from typing import Iterable, List, Union
 
 pd.set_option('display.max_rows', None)  # Show all rows
 pd.set_option('display.max_columns', None)  # Show all columns
@@ -19,10 +21,6 @@ pd.set_option('display.width', None)  # Adjust width to fit the output
 pd.set_option('display.max_colwidth', None)  # Show full column content without truncation
 
 ##############################################################################################################################
-import wrds
-import pandas as pd
-from typing import Iterable, List, Union
-
 def get_crsp_msf_by_ids(
     db,
     identifiers: Iterable[Union[str, int]],

@@ -130,45 +130,54 @@ def get_crsp_msf_by_ids(
 """
 This functions downloads and processes the Fama-French 5-Factor data from the Dartmouth website using the 'requests' library. 
 """
+import io, zipfile, requests
+import pandas as pd
+
 def get_ff5(start_date=None, end_date=None):
     url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Research_Data_5_Factors_2x3_CSV.zip"
-    response = requests.get(url)
+    r = requests.get(url)
+    r.raise_for_status()
 
-    # Read the content of the file
-    zip_content = response.content
+    with zipfile.ZipFile(io.BytesIO(r.content)) as zf:
+        with zf.open("F-F_Research_Data_5_Factors_2x3.csv") as f:
+            raw = pd.read_csv(f, skiprows=3)
 
-    # Open the zip file from the content
-    with zipfile.ZipFile(io.BytesIO(zip_content)) as zf:
-        with zf.open('F-F_Research_Data_5_Factors_2x3.csv') as f:
-            # Read the CSV file content (you can load it into pandas or process as needed)
-            ff_five_factors = pd.read_csv(f, skiprows=3)
+    # find where monthly section ends (right before the "Annual Factors..." line)
+    stop = raw[raw.iloc[:, 0].astype(str).str.contains("Annual Factors: January-December", na=False)].index[0]
+    df = raw.iloc[:stop].copy()
 
-    start_index = ff_five_factors[ff_five_factors.iloc[:, 0].str.contains("Annual Factors: January-December", na=False)].index[0]
-    ff5_1 = ff_five_factors.iloc[:start_index]
+    # normalize first column name and convert to monthly PeriodIndex
+    first_col = df.columns[0]
+    df.rename(columns={first_col: "date"}, inplace=True)
+    df["date"] = pd.PeriodIndex(df["date"].astype(str), freq="M")
 
-    ff5_2=ff5_1.copy()
-    ff5_2.rename(columns={'Unnamed: 0': 'date'}, inplace=True)
+    # convert remaining columns to numeric and scale from % to decimal
+    for c in df.columns[1:]:
+        df[c] = pd.to_numeric(df[c], errors="coerce")
+    df.iloc[:, 1:] = df.iloc[:, 1:] * 0.01
 
-    # Convert first column to Period
-    ff5_2['date'] = pd.to_datetime(ff5_2['date'].astype(str), format='%Y%m').dt.to_period()
-    # Convert all columns except 'date' to numeric types
-    for col in ff5_2.columns[1:]:  # Skip the 'date' column
-        ff5_2[col] = pd.to_numeric(ff5_2[col], errors='coerce')
+    # set index, drop any non-date rows, sort
+    df.set_index("date", inplace=True)
+    df = df.dropna(how="all")  # drop any junk rows if present
+    df = df.sort_index()
 
-    ff5_2.iloc[:, 1:] = ff5_2.iloc[:, 1:] * 0.01
+    # helper: coerce any input to a monthly Period
+    def _to_period_m(x):
+        if x is None:
+            return None
+        if isinstance(x, pd.Period):
+            return x.asfreq("M")
+        # accept 'YYYY-MM', 'YYYYMM', datetime, etc.
+        return pd.Period(pd.to_datetime(str(x)).strftime("%Y-%m"), freq="M")
 
-    # reset the index
-    ff5_2.set_index('date', inplace=True)
-    # Reformat df2 index as monthly PeriodIndex
-    ff5_2.index = pd.PeriodIndex(ff5_2.index, freq="M")
+    start_p = _to_period_m(start_date)
+    end_p   = _to_period_m(end_date)
 
-    # Apply date range filtering if provided
-    if start_date is not None:
-        ff5_2 = ff5_2[ff5_2.index >= pd.Period(start_date, freq='M')]
-    if end_date is not None:
-        ff5_2 = ff5_2[ff5_2.index <= pd.Period(end_date, freq='M')]
+    # clean slicing by Period
+    if start_p or end_p:
+        df = df.loc[start_p:end_p]
 
-    return ff5_2
+    return df
 
 """
 This functions downloads and processes the Fama-French 3-Factor data from the Dartmouth website using the 'requests' library. 

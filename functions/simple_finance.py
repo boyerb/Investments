@@ -168,10 +168,10 @@ def parse_monthly_alpha_vantage_response(r):
     # JSON encodes all numbers as strings, so they must be converted
     # for analysis, plotting, and calculations.
     df = df.astype(float)
-    df.index = df.index.to_period("M")
 
     # Step 6: Convert the index to datetime and sort chronologically.
     df.index = pd.to_datetime(df.index)
+    df.index = df.index.to_period("M")
     df = df.sort_index()
 
     return df

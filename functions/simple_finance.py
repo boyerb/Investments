@@ -47,6 +47,13 @@ def get_crsp_msf_by_ids(
     pandas.DataFrame
         Columns: date, permno, ticker, comnam, shrcd, exchcd, siccd, prc, ret, retx, vol, shrout
     """
+    # --- Normalize date inputs ---
+    try:
+        start = pd.Period(start_date, freq="M").to_timestamp(how="start")
+        end = pd.Period(end_date, freq="M").to_timestamp(how="end")
+    except Exception:
+        raise ValueError("start_date and end_date must be in 'YYYY-MM' format.")
+
     # Normalize identifiers and auto-detect type
     ids_list: List[Union[str, int]] = list(identifiers)
     if not ids_list:
@@ -94,7 +101,7 @@ def get_crsp_msf_by_ids(
             ON a.permno = b.permno
         WHERE a.date >= b.namedt 
           AND a.date <= b.nameendt
-          AND a.date BETWEEN '{start_date}' AND '{end_date}'
+          AND a.date BETWEEN '{start:%Y-%m-%d}' AND '{end:%Y-%m-%d}'
     """
 
     # Build WHERE clause chunks
@@ -122,6 +129,8 @@ def get_crsp_msf_by_ids(
     if not out.empty:
         out = out.sort_values(["permno", "date"]).reset_index(drop=True)
         out['date'] = pd.to_datetime(out['date'])  # ensure that date is a datetime object
+        out['date'] = out['date'].dt.to_period("M")
+        out = out.set_index('date')
     return out
 
 ##############################################################################################################################
@@ -180,6 +189,7 @@ def format_alpha_vantage(r, start_date=None, end_date=None):
     if end_date is not None:
         df = df[df.index <= pd.Period(end_date, freq="M")]
 
+    df.index.name = "date"
 
     return df
 

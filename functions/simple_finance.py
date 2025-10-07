@@ -125,7 +125,7 @@ def get_crsp_msf_by_ids(
     return out
 
 ##############################################################################################################################
-def parse_monthly_alpha_vantage_response(r):
+def format_alpha_vantage(r, start_date=None, end_date=None):
     """
     Convert an Alpha Vantage monthly adjusted time series API response
     into a clean Pandas DataFrame.
@@ -173,6 +173,13 @@ def parse_monthly_alpha_vantage_response(r):
     df.index = pd.to_datetime(df.index)
     df.index = df.index.to_period("M")
     df = df.sort_index()
+
+    # Step 7: Apply optional date filtering.
+    if start_date is not None:
+        df = df[df.index >= pd.Period(start_date, freq="M")]
+    if end_date is not None:
+        df = df[df.index <= pd.Period(end_date, freq="M")]
+
 
     return df
 

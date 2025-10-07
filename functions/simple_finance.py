@@ -171,7 +171,7 @@ def parse_monthly_alpha_vantage_response(r):
 
     # Step 6: Convert the index to datetime and sort chronologically.
     df.index = pd.to_datetime(df.index)
-    df.index = df.index.to_period("M")
+    #df.index = df.index.to_period("M")
     df = df.sort_index()
 
     return df

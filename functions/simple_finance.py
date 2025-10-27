@@ -594,6 +594,12 @@ def slope(y,x):
     # Return the slope (coefficient of x)
     return results.params[1]  # The slope is the second parameter (after the intercept)
 ####################################################################################################
+def describe(name, series):
+    std = np.std(series)         # Compute the standard deviation (volatility)
+    mean = np.mean(series)       # Compute the mean (average return)
+    # Print formatted output with consistent spacing and precision
+    print(f"{name:20s} |  Mean: {mean:.4f} | Std Dev: {std:.6f}")
+####################################################################################################
 def portfolio_volatility(weights, covariance_matrix):
     return np.sqrt(weights.T @ covariance_matrix @ weights)  # Essential Math Fact #5
 ####################################################################################################

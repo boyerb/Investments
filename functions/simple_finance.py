@@ -522,8 +522,8 @@ def get_ff_strategies(stype, start_date=None, end_date=None, details=None):
 
     ff5=get_ff5()
     ff5['mkt']=ff5['Mkt-RF']+ff5['RF']
-    ff5.rename(columns={'SMB':'smb', 'HML':'hml', 'RMW':'rmw', 'CMA':'cma', 'RF':'rf'},inplace=True)
-    dat_final=pd.merge(dat3,ff5[['mkt','smb','hml','rmw','cma','rf']],left_index=True,right_index=True,how='inner')
+    ff5.rename(columns={'MKT-RF':'mkt-rf', 'SMB':'smb', 'HML':'hml', 'RMW':'rmw', 'CMA':'cma', 'RF':'rf'},inplace=True)
+    dat_final=pd.merge(dat3,ff5[['mkt-rf','smb','hml','rmw','cma','rf']],left_index=True,right_index=True,how='inner')
     return dat_final
 
 

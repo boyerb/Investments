@@ -360,7 +360,7 @@ def get_ff_strategies(stype, start_date=None, end_date=None, details=None):
 
         # Open the zip file from the content
         with zipfile.ZipFile(io.BytesIO(zip_content)) as zf:
-            with zf.open('10_Portfolios_Prior_12_2.CSV') as f:
+            with zf.open('10_Portfolios_Prior_12_2.csv') as f:
                 # Read the CSV file content (you can load it into pandas or process as needed)
                 dat = pd.read_csv(f, skiprows=10, header=0)
 

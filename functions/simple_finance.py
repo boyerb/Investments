@@ -259,7 +259,7 @@ def get_ff3(start_date=None, end_date=None):
 
     # Open the zip file from the content
     with zipfile.ZipFile(io.BytesIO(zip_content)) as zf:
-        with zf.open('F-F_Research_Data_Factors.CSV') as f:
+        with zf.open('F-F_Research_Data_Factors.csv') as f:
             # Read the CSV file content (you can load it into pandas or process as needed)
             ff_three_factors = pd.read_csv(f, skiprows=3)
 

@@ -520,8 +520,21 @@ def get_ff_strategies(stype, start_date=None, end_date=None, details=None):
     if end_date is not None:
         dat3 = dat3[dat3.index <= pd.Period(end_date, freq='M')]
 
+    min_date = dat3.index.min()
+    max_date = dat3.index.max()
+    print()
+    print(f"Min Date: {min_date}, Max Date: {max_date}")
+
     ff5=get_ff5()
     ff5.rename(columns={'Mkt-RF':'mkt-rf', 'SMB':'smb', 'HML':'hml', 'RMW':'rmw', 'CMA':'cma', 'RF':'rf'},inplace=True)
+    min_date = ff5.index.min()
+    max_date = ff5.index.max()
+    print()
+    print('check')
+    print(f"Min Date: {min_date}, Max Date: {max_date}")
+
+
+
     dat_final=pd.merge(dat3,ff5[['mkt-rf','smb','hml','rmw','cma','rf']],left_index=True,right_index=True,how='inner')
     return dat_final
 

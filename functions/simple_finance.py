@@ -352,7 +352,7 @@ def get_ff_strategies(stype, start_date=None, end_date=None, details=None):
         # Continue the momentum strategy implementation below
 
         # Make the request using the session
-        url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/10_Portfolios_Prior_12_2_CSV.zip"
+        url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/10_Portfolios_Prior_12_2_csv.zip"
         response = requests.get(url)
 
         # Read the content of the file

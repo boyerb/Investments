@@ -288,7 +288,7 @@ def get_ff3(start_date=None, end_date=None):
 
     return ff3_2
 ####################################################################################################
-def get_ff_strategies(stype, start_date=None, end_date=None, details=None):
+def get_ff_strategies(stype, start_date=None, end_date=None, details=None, factors=None):
 
     if stype == 'beta':
 
@@ -520,10 +520,16 @@ def get_ff_strategies(stype, start_date=None, end_date=None, details=None):
     if end_date is not None:
         dat3 = dat3[dat3.index <= pd.Period(end_date, freq='M')]
 
-    ff3=get_ff3()
-    ff3.rename(columns={'Mkt-RF':'mkt-rf', 'SMB':'smb', 'HML':'hml', 'RF':'rf'},inplace=True)
+    # merge in either FF3 or FF5
+    if factors=='FF5':
+        ff5=get_ff5()
+        ff5.rename(columns={'Mkt-RF':'mkt-rf', 'SMB':'smb', 'HML':'hml', 'RMW': 'rmw', 'CMA': 'cma', 'RF':'rf'}, inplace=True)
+        dat_final = pd.merge(dat3, ff5[['mkt-rf', 'smb', 'hml', 'smb', 'cma', 'rf']], left_index=True, right_index=True, how='inner')
+    else:
+        ff3=get_ff3()
+        ff3.rename(columns={'Mkt-RF':'mkt-rf', 'SMB':'smb', 'HML':'hml', 'RF':'rf'},inplace=True)
+        dat_final=pd.merge(dat3,ff3[['mkt-rf','smb','hml','rf']],left_index=True,right_index=True,how='inner')
 
-    dat_final=pd.merge(dat3,ff3[['mkt-rf','smb','hml','rf']],left_index=True,right_index=True,how='inner')
     return dat_final
 
 

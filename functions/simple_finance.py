@@ -293,7 +293,7 @@ def get_ff_strategies(stype, start_date=None, end_date=None, details=None):
     if stype == 'beta':
 
         # Make the request using the session
-        url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/Portfolios_Formed_on_BETA_CSV.zip"
+        url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/Portfolios_Formed_on_BETA_csv.zip"
         response = requests.get(url)
 
         # Read the content of the file
@@ -407,7 +407,7 @@ def get_ff_strategies(stype, start_date=None, end_date=None, details=None):
     elif stype == 'shorttermreversal':
 
         # Make the request using the session
-        url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/10_Portfolios_Prior_1_0_CSV.zip"
+        url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/10_Portfolios_Prior_1_0_csv.zip"
         response = requests.get(url)
 
         # Read the content of the file
@@ -418,7 +418,7 @@ def get_ff_strategies(stype, start_date=None, end_date=None, details=None):
 
         # Open the zip file from the content
         with zipfile.ZipFile(io.BytesIO(zip_content)) as zf:
-            with zf.open('10_Portfolios_Prior_1_0.CSV') as f:
+            with zf.open('10_Portfolios_Prior_1_0.csv') as f:
                 # Read the CSV file content (you can load it into pandas or process as needed)
                 dat = pd.read_csv(f, skiprows=10, header=0, encoding='utf-8', skipfooter=5, engine='python')
 
@@ -462,7 +462,7 @@ def get_ff_strategies(stype, start_date=None, end_date=None, details=None):
     elif stype == 'accruals':
 
         # Make the request using the session
-        url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/Portfolios_Formed_on_AC_CSV.zip"
+        url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/Portfolios_Formed_on_AC_csv.zip"
         response = requests.get(url)
 
         # Read the content of the file

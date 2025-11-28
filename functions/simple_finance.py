@@ -13,6 +13,10 @@ from scipy.stats import norm
 from scipy.optimize import brentq
 import pandas as pd
 from typing import Iterable, List, Union
+import os, re, io, requests, zipfile
+from bs4 import BeautifulSoup
+from urllib.parse import urljoin, urlparse
+
 
 pd.set_option('display.max_rows', None)  # Show all rows
 pd.set_option('display.max_columns', None)  # Show all columns
@@ -287,6 +291,9 @@ def get_ff3(start_date=None, end_date=None):
         ff3_2 = ff3_2[ff3_2.index <= pd.Period(end_date, freq='M')]
 
     return ff3_2
+
+####################################################################################################
+
 ####################################################################################################
 def get_ff_strategies(stype, start_date=None, end_date=None, details=None, factors=None):
 
@@ -347,7 +354,6 @@ def get_ff_strategies(stype, start_date=None, end_date=None, details=None, facto
 
     #-------------------------------------------
     elif stype == "momentum":
-
 
         # Continue the momentum strategy implementation below
 
@@ -510,8 +516,69 @@ def get_ff_strategies(stype, start_date=None, end_date=None, details=None, facto
             print()
             print(f"Min Date: {min_date}, Max Date: {max_date}")
 
+    elif stype == "value":
+
+        # Continue the momentum strategy implementation below
+
+        # Make the request using the session
+        url = "https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/Portfolios_Formed_on_BE-ME_CSV.zip"
+        response = requests.get(url)
+
+        print("Running from:", os.path.abspath(__file__))
+
+        # Read the content of the file
+        zip_content = response.content
+
+        # Open the zip file from the content
+        with zipfile.ZipFile(io.BytesIO(zip_content)) as zf:
+            with zf.open('Portfolios_Formed_on_BE-ME.csv') as f:
+                # Read the CSV file content (you can load it into pandas or process as needed)
+                dat = pd.read_csv(f, skiprows=23, header=0)
+
+        start_index = dat[dat.iloc[:, 0].str.contains("Equal Weight Returns -- Monthly", na=False)].index[0]
+        dat1 = dat.iloc[:start_index]
+        dat2 = dat1.copy()
+
+        dat2.rename(columns={'Unnamed: 0': 'date'}, inplace=True)
+        dat2.rename(columns={'Lo 10': 'Dec 1', '2-Dec': 'Dec 2', '3-Dec': 'Dec 3', '4-Dec': 'Dec 4'}, inplace=True)
+        dat2.rename(columns={'5-Dec': 'Dec 5', '6-Dec': 'Dec 6', '7-Dec': 'Dec 7', '8-Dec': 'Dec 8'}, inplace=True)
+        dat2.rename(columns={'9-Dec': 'Dec 9', 'Hi 10': 'Dec 10'}, inplace=True)
+
+        cols = ['date', 'Dec 1', 'Dec 2', 'Dec 3', 'Dec 4', 'Dec 5', 'Dec 6', 'Dec 7', 'Dec 8', 'Dec 9', 'Dec 10']
+        dat3 = dat2[cols]
+        dat4 = dat3.copy()
+        # Convert first column to Period
+        dat4['date'] = pd.to_datetime(dat4['date'].astype(str), format='%Y%m').dt.to_period()
+        for col in dat4.columns[1:]:  # Skip the 'date' column
+            dat4[col] = pd.to_numeric(dat4[col], errors='coerce')
+
+        dat4.iloc[:, 1:] = dat4.iloc[:, 1:] * 0.01
+
+        # reset the index
+        dat4.set_index('date', inplace=True)
+
+        if details is True:
+            print("----------------")
+            print("Momentum Strategy")
+            print("----------------")
+            print("Basic Strategy: stocks are sorted into deciles based on their prior 12-month returns, excluding the most recent month.")
+            print()
+            print("Construction: The portfolios are constructed monthly using NYSE prior (2-12) return decile breakpoints.")
+            print()
+            print("Stocks: The portfolios constructed each month include NYSE, AMEX, and NASDAQ stocks with prior return data.")
+            print("To be included in a portfolio for month t (formed at the end of month t-1), a stock must have a price for the")
+            print("end of month t-13 and a good return for t-2. In addition, any missing returns from t-12 to t-3 must be -99.0,")
+            print("CRSP's code for a missing price. Each included stock also must have ME for the end of month t-1.")
+            min_date = dat4.index.min()
+            max_date = dat4.index.max()
+            print()
+            print(f"Min Date: {min_date}, Max Date: {max_date}")
+
+        dat3=dat4.copy()
+
     else:
-        raise ValueError("Invalid strategy type. Choose 'beta', 'momentum', or 'shortermreversal'.")
+        raise ValueError("Invalid strategy type. Choose 'beta', 'momentum', 'shortermreversal', or 'value'.")
+
 
     #------------------------------------------
     # Apply date range filtering if provided
@@ -586,7 +653,7 @@ def intercept(y,x):
     results = model.fit()
 
     # Return the slope (coefficient of x)
-    return results.params[0]  # The slope is the second parameter (after the intercept)
+    return results.params['const']  # The slope is the second parameter (after the intercept)
 
 
 ####################################################################################################
@@ -714,7 +781,6 @@ def portfolio_sharpe(weights: np.ndarray, expected_returns: np.ndarray,
 
     # Compute and return the Sharpe ratio (excess return divided by risk)
     return Sharpe
-
 ####################################################################################################
 def tangent_portfolio(expected_returns, covariance_matrix, rf=None, factors=None):
     """
@@ -748,7 +814,7 @@ def tangent_portfolio(expected_returns, covariance_matrix, rf=None, factors=None
         tangent_return = tangent_weights.T @ expected_returns
         tangent_volatility = portfolio_volatility(tangent_weights, covariance_matrix)
     else:
-        constraints = ({'type': 'eq', 'fun': lambda x: x[0] - 1})  # Constraint: weights sum to 1
+        constraints = ({'type': 'eq', 'fun': lambda x: np.sum(x)})  # Constraint: weights sum to 0
 
         # Define a lambda function to negate the output of portfolio_sharpe
         neg_portfolio_sharpe = lambda x, expected_returns, covariance_matrix: -portfolio_sharpe(x, expected_returns, covariance_matrix, zerocost=True)

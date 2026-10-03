@@ -1,1 +1,34 @@
+# PyCharm and other IDE metadata
 .idea/
+.vscode/
+
+# Local Python environments
+.venv/
+venv/
+env/
+ENV/
+.conda/
+
+# Python and package build artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Jupyter-generated files
+.ipynb_checkpoints/
+
+# Local dependency/environment files
+requirements*.txt
+pyproject.toml
+uv.lock
+.python-version
+.uv-cache/
+.codex-uv-cache/
+.env
+.env.*
+!.env.example
+
+# Local data files
+data/

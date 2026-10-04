@@ -32,3 +32,7 @@ uv.lock
 
 # Local data files
 data/
+
+# Codex-generated spreadsheet work and output artifacts
+.codex-spreadsheet-work/
+outputs/
